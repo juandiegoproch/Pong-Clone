@@ -1,9 +1,10 @@
 import sys
 import pygame
 import random
+import time
 
 tamano_obst = 30
-collision_timeout = 20
+collision_timeout = 10
 
 pygame.init()
 #Colores
@@ -50,7 +51,7 @@ collider_timer = 0
 obstaculos = []
 for x in range(200,800,tamano_obst):
     for y in range(50,600,tamano_obst):
-        if random.randint(0,10) == 1:
+        if random.randint(0,20) == 1:
             obstaculos.append((x,y))
 while not game_over:
     # Hasta que el jugador decida romper el bucle: salir del juego
@@ -114,11 +115,26 @@ while not game_over:
         collider_timer = collision_timeout
     for obst in obstaculos_hitboxes:
         if pelota.colliderect(obst) and not collider_timer:
-            mov_pelota_x*=-1
-            print(obst)
-            mov_pelota_y*=-1
-            mov_pelota_y+= random.random()*random.randint(-3,3)
-            mov_pelota_x+= random.random()*random.randint(-3,3)
+            center_x = obst.x+tamano_obst//2
+            center_y = obst.y+tamano_obst//2
+            """
+            Ver cual de los ejes es el que más cerca está del centro, rebotar en ese eje
+            """
+
+            delta_x = abs(pelota_x - center_x)
+            delta_y = abs(pelota_y - center_y)
+
+            if delta_x >= delta_y:
+
+                mov_pelota_x *=-1
+                mov_pelota_x += random.random()*random.randint(-1,1)
+                mov_pelota_y += random.random()*random.randint(-1,1)
+            else:
+                
+                mov_pelota_y *=-1
+                mov_pelota_x += random.random()*random.randint(-1,1)
+                mov_pelota_y += random.random()*random.randint(-1,1)
+
             collider_timer = collision_timeout
 
     if collider_timer > 0: collider_timer-=1
