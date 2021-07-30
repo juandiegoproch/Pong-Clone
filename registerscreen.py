@@ -3,29 +3,31 @@ import json
 from helpers import *
 
 
+
 def register_screen(screen):
     clock = pygame.time.Clock()
+    background = pygame.image.load("Images/Background.png.").convert()
     name = ""
     listening_keyboard = 0
     difficulty = 0
     while True:
-        screen.fill(black)
+        screen.blit(background, [0, 0])
 
         #Name Stuff
-        draw_text(screen,"Nombre: ",30,50,50)
-        text_box = pygame.draw.rect(screen,white,((170,40,450,50)))
-        draw_text(screen,name,30,250,50)
+        draw_text(screen,"Nombre: ",30,100,100)
+        text_box = pygame.draw.rect(screen,white,((210,95,450,50)))
+        draw_text(screen,name,30,250,100)
         #Play Button
         play_button = pygame.draw.rect(screen,white,((300,500,200,70)))
         draw_text(screen,"Jugar",30,360,510)
 
         #Difficulty
-        diff1_button = pygame.draw.rect(screen, blue if difficulty == 0 else white,((100,200,300,50)))
-        draw_text(screen,"Facil",30,110,210)
-        diff2_button = pygame.draw.rect(screen, blue if difficulty == 1 else white,((100,260,300,50)))
-        draw_text(screen,"Intermedio",30,110,270)
-        diff3_button = pygame.draw.rect(screen, blue if difficulty == 2 else white,((100,320,300,50)))
-        draw_text(screen,"Dificil",30,110,330)
+        diff1_button = pygame.draw.rect(screen, blue if difficulty == 0 else white,((100,220,300,50)))
+        draw_text(screen,"Facil",30,110,230)
+        diff2_button = pygame.draw.rect(screen, blue if difficulty == 1 else white,((100,280,300,50)))
+        draw_text(screen,"Intermedio",30,110,300)
+        diff3_button = pygame.draw.rect(screen, blue if difficulty == 2 else white,((100,340,300,50)))
+        draw_text(screen,"Dificil",30,110,360)
         
         events = pygame.event.get()
         for ev in events:

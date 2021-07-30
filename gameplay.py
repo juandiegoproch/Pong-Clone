@@ -9,10 +9,10 @@ def gameplay_screen(screen,diff,player_name):
     #configs
     obstacle_size = 40
     obstacle_x_init = 200
-    obstacle_probability = 0
+    obstacle_probability = 0.05
     ball_radius = 10
     ball_speed = 3
-    powerup_pertick_probability = 0
+    powerup_pertick_probability = 0.008
     ball_iframe = 3
     
     # FPS and screen stuff
@@ -64,15 +64,41 @@ def gameplay_screen(screen,diff,player_name):
     # powerup list
 
     powerups = []
-    
+    # Ambientes
+    forest = pygame.image.load("Images/Forest2.jpg")
+    mountains = pygame.image.load("Images/Mountains.jpg")
+    desert = pygame.image.load("Images/desert.png")
+    tundra = pygame.image.load("Images/tundra.gif")
+    exosfera = pygame.image.load("Images/Space.jpg")
+    ocean = pygame.image.load("Images/Ocean2.png")
+    landscape = ""
+    DiffAmbientProb = random.randint(1, 2)
+    if diff == 1:
+        DiffAmbientProb = random.randint(3, 4)
+    if diff == 2:
+        DiffAmbientProb = random.randint(5, 6)
+
+    AmbientProb = DiffAmbientProb
+    if AmbientProb == 1:
+        landscape = forest
+    elif AmbientProb == 2:
+        landscape = mountains
+    elif AmbientProb == 3:
+        landscape = desert
+    elif AmbientProb == 4:
+        landscape = tundra
+    elif AmbientProb == 5:
+        landscape = ocean
+    elif AmbientProb == 6:
+        landscape = exosfera
     # Obstacle Generation:
     random.seed(100)
     obstacles = []
     for x in range((screensize[0]-obstacle_x_init)//obstacle_size):
         for y in range(screensize[1]//obstacle_size):
-            if random.random()<= obstacle_probability:
-                obstacles.append([x*obstacle_size,y*obstacle_size,-1])
-        
+            if random.random() <= obstacle_probability:
+                obstacles.append([x*obstacle_size, y*obstacle_size, -1])
+
     while True:
         
         #update player pos
@@ -106,10 +132,10 @@ def gameplay_screen(screen,diff,player_name):
                 i.ypos = 0
             if i.ypos < 0:
                 i.ypos = screensize[1]
-            
-        
+
+
         #draws
-        screen.fill(black)
+        screen.blit(landscape, [0, 0])
 
         #draw score:
         scorestr =  "Score: "+str(points)
