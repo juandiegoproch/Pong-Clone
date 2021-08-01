@@ -7,6 +7,7 @@ import time
 
 def gameplay_screen(screen,diff,player_name):
     #configs
+    player_movement_speed = 6
     obstacle_size = 40
     obstacle_x_init = 200
     obstacle_probability = 0.05
@@ -14,6 +15,7 @@ def gameplay_screen(screen,diff,player_name):
     ball_speed = 3
     powerup_pertick_probability = 0.008
     ball_iframe = 3
+    xmovement_addition = 3
     
     # FPS and screen stuff
     clock = pygame.time.Clock()
@@ -49,14 +51,17 @@ def gameplay_screen(screen,diff,player_name):
     points_multiplier = 0
     default_ballspeed = 3
     if diff == 0:
+        player_movement_speed = 6
         default_ballspeed = 3
         points_multiplier = 1
         ball_iframe = 2
     elif diff == 1:
+        player_movement_speed = 8
         default_ballspeed = 6
         points_multiplier = 1.5
         ball_iframe = 2
     elif diff == 2:
+        player_movement_speed = 10
         default_ballspeed = 9
         points_multiplier = 2
         ball_iframe = 4
@@ -184,18 +189,27 @@ def gameplay_screen(screen,diff,player_name):
         
         # ball/obstacle/player collision
         for bll in balls:
+            #ball is on playing field:
+            if bll.xpos > player_posx + player_sizex:
+                bll.infield = True
             #player collision handler
-            if bll.ypos > player_posy and bll.ypos < player_posy+player_sizey and bll.xpos <= player_posx + player_sizex:
+            if bll.ypos > player_posy and bll.ypos < player_posy+player_sizey and bll.xpos <= player_posx + player_sizex and bll.infield:
+                print("Hit on player. Xspeed = ",bll.dirx)
                 #speed update
-                bll.collision_timer = ball_iframe
-                bll.dirx *= -1 + (random.randint(-1,1)*random.random()) + player_yspeed
+                bll.dirx += xmovement_addition
+                bll.dirx *= -1
+                bll.diry += player_yspeed
                 #speed normalize
                 ball_speed_magnitude = (bll.diry**2 + bll.dirx**2)**0.5
                 bll.diry = (bll.diry/ball_speed_magnitude)*ball_speed
                 bll.dirx = (bll.dirx/ball_speed_magnitude)*ball_speed
+                bll.infield = False
             #obstacle collisison handler
+            has_hit = False
             for obst in obstacle_hitboxes:
-                if obst.collidepoint(bll.xpos,bll.ypos) and (not bll.collision_timer):
+                if obst.collidepoint(bll.xpos,bll.ypos) and (not bll.collision_timer) and not(bll.consecutive_checks_hit):
+                    has_hit = True
+                    bll.consecutive_checks_hit +=1
                     bll.collision_timer = ball_iframe
                     obst_centerx, obst_centery = obst.center
                     deltay = abs(obst_centerx - bll.xpos)
@@ -204,11 +218,13 @@ def gameplay_screen(screen,diff,player_name):
                     if deltay < deltax:
                         bll.diry *= -1 + (random.randint(-1,1)*random.random())
                     else:
-                        bll.dirx *= -1 + (random.randint(-1,1)*random.random())
+                        bll.dirx *= -1 + (random.randint(-2,2)*random.random())
                     # normalize speed
                     ball_speed_magnitude = (bll.diry**2 + bll.dirx**2)**0.5
                     bll.diry = (bll.diry/ball_speed_magnitude)*ball_speed
                     bll.dirx = (bll.dirx/ball_speed_magnitude)*ball_speed
+            if not(has_hit):
+                bll.consecutive_checks_hit = 0
 
             # power up collision
             for pwup in powerups:
@@ -302,9 +318,9 @@ def gameplay_screen(screen,diff,player_name):
             # player movement
             if ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_w:
-                    player_yspeed = -6
+                    player_yspeed = -player_movement_speed
                 if ev.key == pygame.K_s:
-                    player_yspeed = 6
+                    player_yspeed = player_movement_speed
             #Si el usuario deja de presionar una tecla
             if ev.type == pygame.KEYUP:
                 #Jugador 1
