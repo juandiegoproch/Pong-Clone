@@ -17,6 +17,7 @@ def gameplay_screen(screen,diff,player_name):
     xmovement_addition = 3
     player_speed = 6
     weird_bounce_chance = 0.1
+    extra_size_player = 160
     
     # FPS and screen stuff
     clock = pygame.time.Clock()
@@ -35,11 +36,11 @@ def gameplay_screen(screen,diff,player_name):
     ignores_obstacles = False
 
     current_power_up = "None"
-    
-    # Balls array
-    balls = [ball(400,300,3,-3)]
+
 
     #player variables
+    player_icons = []
+    player_icon = None
     player_posx = 30
     player_posy = 250
 
@@ -67,36 +68,34 @@ def gameplay_screen(screen,diff,player_name):
         points_multiplier = 2
         ball_iframe = 5
     ball_speed = default_ballspeed
+    
+    # Balls array
+    balls = [ball(400,300,default_ballspeed,-default_ballspeed)]
     # powerup list
 
     powerups = []
+    #
+    
     # Ambientes
-    forest = pygame.image.load("Images/Forest2.jpg")
-    mountains = pygame.image.load("Images/Mountains.jpg")
-    desert = pygame.image.load("Images/desert.png")
-    tundra = pygame.image.load("Images/tundra.gif")
-    exosfera = pygame.image.load("Images/Space.jpg")
-    ocean = pygame.image.load("Images/Ocean2.png")
-    landscape = ""
-    DiffAmbientProb = random.randint(1, 2)
+    ambientes = [pygame.image.load("Images/Forest2.jpg"),
+                 pygame.image.load("Images/Mountains.jpg"),
+                 pygame.image.load("Images/desert.png"),
+                 pygame.image.load("Images/tundra.jpg"),
+                 pygame.image.load("Images/Space.jpg"),
+                 pygame.image.load("Images/Ocean2.png"),
+    ]
+    # seleccionar ambientes
+    landscape = None
+    DiffAmbientProb = None
+    if diff == 0:
+        DiffAmbientProb = random.randint(0, 2)
     if diff == 1:
-        DiffAmbientProb = random.randint(3, 4)
+        DiffAmbientProb = random.randint(2, 3)
     if diff == 2:
-        DiffAmbientProb = random.randint(5, 6)
+        DiffAmbientProb = random.randint(4, 5)
 
-    AmbientProb = DiffAmbientProb
-    if AmbientProb == 1:
-        landscape = forest
-    elif AmbientProb == 2:
-        landscape = mountains
-    elif AmbientProb == 3:
-        landscape = desert
-    elif AmbientProb == 4:
-        landscape = tundra
-    elif AmbientProb == 5:
-        landscape = ocean
-    elif AmbientProb == 6:
-        landscape = exosfera
+    landscape = ambientes[DiffAmbientProb]
+
     # Obstacle Generation:
     #random.seed(100) # DEBUG
     obstacles = []
@@ -147,7 +146,7 @@ def gameplay_screen(screen,diff,player_name):
         scorestr =  "Score: "+str(points)
         draw_text(screen,scorestr,20,720,10)
 
-        #draw_power_up
+        #draw_power_up text
         pwupstr =  "Power Up: "+current_power_up
         draw_text(screen,pwupstr,20,50,10)
         
@@ -167,6 +166,9 @@ def gameplay_screen(screen,diff,player_name):
         
         # draw powerups:
         for i in powerups:
+            powerup_type = i[1] - 1
+
+            
             pygame.draw.rect(screen,blue,i[0])
             
                              
@@ -268,7 +270,7 @@ def gameplay_screen(screen,diff,player_name):
                     # do_powers_stuff
                     if power == 1:
                         #1. Size increment
-                        player_sizey = 160
+                        player_sizey = extra_size_player
                         current_power_up = " + Tamaño"
                         
                     if power == 2:

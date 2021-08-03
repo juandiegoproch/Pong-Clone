@@ -6,6 +6,7 @@ from gameplay import *
 
 #init
 pygame.init()
+pygame.mixer.pre_init(44100, 16, 2, 4096)
 sizeof_screen = (800,600)
 
 

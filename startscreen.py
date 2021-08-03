@@ -3,6 +3,9 @@ import json
 from helpers import *
 
 def start_screen(screen):
+    #sound
+    background_track = pygame.mixer.Sound("background_scorescreen.mp4")
+    background_track.play(loops=-1)
     # variables
     clock = pygame.time.Clock()
     display_player_qty = 5

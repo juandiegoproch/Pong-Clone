@@ -21,8 +21,12 @@ class ball:
         self.diry = diry
         self.dirx = dirx
         self.collision_timer = 0
+        self.infield = True
+        self.consecutive_checks_hit = 0
 def doesnt_collide(pointx,pointy,rects):
     for i in rects:
         if i.collidepoint(pointx,pointy):
             return False
     return True
+
+    
