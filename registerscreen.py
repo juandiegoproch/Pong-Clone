@@ -7,6 +7,8 @@ from helpers import *
 def register_screen(screen):
     clock = pygame.time.Clock()
     background = pygame.image.load("Images/Background.png.").convert()
+    bg_sound = pygame.mixer.Sound("Audio/Music/bg_register.ogg")
+    bg_sound.play(-1)
     name = ""
     listening_keyboard = 0
     difficulty = 0
@@ -58,6 +60,7 @@ def register_screen(screen):
                 # Play the game!
 
                 if play_button.collidepoint(pos):
+                    bg_sound.fadeout(5000)
                     return difficulty, name, 2
             if ev.type == pygame.KEYDOWN:
                 if listening_keyboard:

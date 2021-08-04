@@ -23,9 +23,9 @@ class ball:
         self.collision_timer = 0
         self.infield = True
         self.consecutive_checks_hit = 0
-def doesnt_collide(pointx,pointy,rects):
+def doesnt_collide(rect1,rects):
     for i in rects:
-        if i.collidepoint(pointx,pointy):
+        if rect1.colliderect(i[0]):
             return False
     return True
 

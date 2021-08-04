@@ -4,7 +4,7 @@ from helpers import *
 
 def start_screen(screen):
     #sound
-    background_track = pygame.mixer.Sound("background_scorescreen.mp4")
+    background_track = pygame.mixer.Sound("Audio/Music/bg_score.ogg")
     background_track.play(loops=-1)
     # variables
     clock = pygame.time.Clock()
@@ -49,6 +49,7 @@ def start_screen(screen):
             if ev.type == pygame.MOUSEBUTTONUP and ev.button == 1:
                 pos = pygame.mouse.get_pos()
                 if start_button.collidepoint(pos):
+                    background_track.fadeout(3000)
                     return 1
         
         #flip screen

@@ -12,12 +12,13 @@ def gameplay_screen(screen,diff,player_name):
     obstacle_probability = 0.05
     ball_radius = 10
     ball_speed = 3
-    powerup_pertick_probability = 0.008
+    powerup_pertick_probability = 0.01
     ball_iframe = 3
     xmovement_addition = 3
     player_speed = 6
     weird_bounce_chance = 0.1
     extra_size_player = 160
+    weird_tp_chance = 0.005
     
     # FPS and screen stuff
     clock = pygame.time.Clock()
@@ -37,9 +38,12 @@ def gameplay_screen(screen,diff,player_name):
 
     current_power_up = "None"
 
+    # Sound effect handles
+    
 
     #player variables
-    player_icons = []
+    player_standard = pygame.image.load("Sprites/Player_textures/paleta.png")
+    player_extended = pygame.image.load("Sprites/Player_textures/paleta_extended.png")
     player_icon = None
     player_posx = 30
     player_posy = 250
@@ -74,6 +78,27 @@ def gameplay_screen(screen,diff,player_name):
     # powerup list
 
     powerups = []
+
+    #powerup_Textures
+        #Power id's
+        # 1. Size increment
+        # 2. Multiply ball
+        # 3. Ball_speed +
+        # 4. Ball_speed -
+        # 5. x2 points
+        # 6. ignore obstacles (600 frames)
+        # 7. +1 life
+    powerups_textures = [
+        pygame.image.load("Sprites/power_ups/extra_size.png"),
+        pygame.image.load("Sprites/power_ups/ball_multiply.png"),
+        pygame.image.load("Sprites/power_ups/ballspeed+.png"),
+        pygame.image.load("Sprites/power_ups/ballspeed-.png"),
+        pygame.image.load("Sprites/power_ups/x2_score.png"),
+        pygame.image.load("Sprites/power_ups/phase.png"),
+        pygame.image.load("Sprites/power_ups/extra_live.png"),
+        pygame.image.load("Sprites/Obstacles/obstacle.png"),
+        ]
+    
     #
     
     # Ambientes
@@ -84,7 +109,17 @@ def gameplay_screen(screen,diff,player_name):
                  pygame.image.load("Images/Space.jpg"),
                  pygame.image.load("Images/Ocean2.png"),
     ]
-    # seleccionar ambientes
+    musicas = [
+        pygame.mixer.Sound("Audio/Music/bg_forest.ogg"),
+        pygame.mixer.Sound("Audio/Music/bg_montana.ogg"),
+        pygame.mixer.Sound("Audio/Music/bg_desierto.ogg"),
+        pygame.mixer.Sound("Audio/Music/bg_tundra.ogg"),
+        pygame.mixer.Sound("Audio/Music/bg_espacio.ogg"),
+        pygame.mixer.Sound("Audio/Music/bg_ocean.ogg")
+
+        ]
+    # seleccionar ambientes y musica!
+    bg_music = None
     landscape = None
     DiffAmbientProb = None
     if diff == 0:
@@ -93,16 +128,12 @@ def gameplay_screen(screen,diff,player_name):
         DiffAmbientProb = random.randint(2, 3)
     if diff == 2:
         DiffAmbientProb = random.randint(4, 5)
-
+    bg_music = musicas[DiffAmbientProb]
+    bg_music.play(loops=-1)
     landscape = ambientes[DiffAmbientProb]
 
-    # Obstacle Generation:
-    #random.seed(100) # DEBUG
+
     obstacles = []
-    for x in range((screensize[0]-obstacle_x_init)//obstacle_size):
-        for y in range(screensize[1]//obstacle_size):
-            if random.random() <= obstacle_probability:
-                obstacles.append([x*obstacle_size, y*obstacle_size, -1])
 
     while True:
         
@@ -113,11 +144,18 @@ def gameplay_screen(screen,diff,player_name):
         #update ball positions
         
         for i in balls:
-            i.xpos += i.dirx
-            i.ypos += i.diry
+            i.xpos += int(i.dirx) 
+            i.ypos += int(i.diry)
         
         #on wall collide:
         for i in balls:
+            # do for all balls, add a bit to xpos to avoid vertical travel that is VERY annoying
+            if i.dirx < (i.diry*10):
+                i.dirx+= 0.01
+                i.dirx*=1.005
+                ball_speed_magnitude = (i.diry**2 + i.dirx**2)**0.5
+                i.diry = (i.diry/ball_speed_magnitude)*ball_speed
+                i.dirx = (i.dirx/ball_speed_magnitude)*ball_speed
             #loose condition
             if i.xpos <= 0:
                 if has_extra_life:
@@ -130,8 +168,19 @@ def gameplay_screen(screen,diff,player_name):
             
             #Bounce of wall
             if i.xpos >= screensize[0]:
-                i.dirx *=-1
-                points += points_multiplier*(2 if has_double_points else 1)
+                #if it should bounce
+                if not i.consecutive_checks_hit:
+                    #if it hasn´t bounced allready
+                    collision_timer = ball_iframe
+                    i.dirx = (i.dirx* -1)
+                    i.xpos = screensize[0]-3
+
+
+                    #points
+                    points += points_multiplier*(2 if has_double_points else 1)
+            else:
+                i.consecutive_checks_hit = False
+                
             # wrap arround!
             if i.ypos > screensize[1]:
                 i.ypos = 0
@@ -151,8 +200,12 @@ def gameplay_screen(screen,diff,player_name):
         draw_text(screen,pwupstr,20,50,10)
         
         #Draw Player
-
-        player_hitbox = pygame.draw.rect(screen,white,(player_posx,player_posy,player_sizex,player_sizey))
+        if player_sizey <= 85:
+            screen.blit(player_standard,(player_posx,player_posy))
+        else:
+            screen.blit(player_extended,(player_posx,player_posy))
+        player_hitbox = pygame.Rect((player_posx,player_posy,player_sizex,player_sizey))
+        
 
         #draw_obstacles:
         obstacle_hitboxes = []
@@ -162,14 +215,11 @@ def gameplay_screen(screen,diff,player_name):
 
         #draw_balls
         for i in balls:
-            pygame.draw.circle(screen, white, (i.xpos, i.ypos), ball_radius)
+            pygame.draw.circle(screen, black, (i.xpos, i.ypos), ball_radius)
         
         # draw powerups:
-        for i in powerups:
-            powerup_type = i[1] - 1
-
-            
-            pygame.draw.rect(screen,blue,i[0])
+        to_blit = [(powerups_textures[p[1]-1],(p[0].x,p[0].y)) for p in powerups]
+        screen.blits(to_blit)
             
                              
         #spawn powerups
@@ -186,8 +236,12 @@ def gameplay_screen(screen,diff,player_name):
             # 6. ignore obstacles (600 frames)
             # 7. +1 life
             power = 7 if not random.randint(0,10) else random.randint(1,6)
-            if doesnt_collide(powerup_x,powerup_y,obstacle_hitboxes):                             
-                powerups.append((pygame.Rect(powerup_x,powerup_y,obstacle_size,obstacle_size),power))
+            if doesnt_collide(pygame.Rect(powerup_x,powerup_y,obstacle_size,obstacle_size),powerups):
+                if random.random() <= 0.7:
+                    powerups.append((pygame.Rect(powerup_x,powerup_y,obstacle_size,obstacle_size),8))
+                else:
+                    powerups.append((pygame.Rect(powerup_x,powerup_y,obstacle_size,obstacle_size),power))
+                
         
         
         # ball/obstacle/player collision
@@ -230,6 +284,7 @@ def gameplay_screen(screen,diff,player_name):
                     ball_speed_magnitude = (bll.diry**2 + bll.dirx**2)**0.5
                     bll.diry = (bll.diry/ball_speed_magnitude)*ball_speed
                     bll.dirx = (bll.dirx/ball_speed_magnitude)*ball_speed
+                    del(obst)
             if not(has_hit):
                 bll.consecutive_checks_hit = 0
 
@@ -339,6 +394,7 @@ def gameplay_screen(screen,diff,player_name):
         if dead:
             draw_text(screen,"GAME OVER",120,50,250)
             deadtimer -=1
+            bg_music.fadeout(10000)
             if deadtimer <= 0:
                 #TODO - LOG ON JSON
                 highscores = {}
@@ -352,7 +408,6 @@ def gameplay_screen(screen,diff,player_name):
 
                 with open("saves/player_scores.json","w") as scorefile:
                     json.dump(highscores,scorefile)
-
                 return 0
         
         pygame.display.flip()
